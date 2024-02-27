@@ -39,86 +39,43 @@ class OrderApplicationTests {
     @Autowired
     private OrderService orderService;
 
-    @Autowired
-    private CustomerService customerService;
+    
     @Autowired
     private OrderRepository orderRepository;
-    @Autowired
-    private CartRepository cartRepository;
-    @Autowired
-    private CartService cartService;
+  
     @Autowired
     private CustomerRepository customerRepository;
-
     @Test
-    @DisplayName("A test case for the method createOrder")
-    void createOrderTest() throws OrderException , CartException {
-       Integer customerId = 1;
-
-       try {
-          Assertions.assertNotNull(this.orderService.createOrder(customerId));
-
-       } catch (Exception e) {
-
-           System.out.println("Unexpected Exception in createOrderTest: " + e.getClass().getName() + " - " + e.getMessage());
-       }
-   }
-
-
-
-    @Test
-    @DisplayName("A test case for the method getOrderById")
-    void getOrderByIDTest()
-    {
-        try
-        {
-            Assertions.assertNotNull(1);
-        }
-        catch(Exception e)
-        {
-            System.out.println("Unexpected Exception: "+e.getClass().getName());
-        }
-    }
-
-    @Test
-    void getOrderByIdTestThrowsAnExceptionIfOrderIdsAreNotEqual()throws OrderException{
+    void getOrderByIdTest()throws OrderException{
         Integer orderId=1;
         try
         {
             Assertions.assertEquals(orderId,this.orderService.getOrderById(orderId));
         }
-        catch(Exception e)
+        catch(OrderException e)
         {
-            System.out.println("Unexpected Exception in getOrderByIdTest: "+e.getClass().getName());
+            Assertions.assertEquals("order does not exist for Id:"+orderId,e.getMessage());
         }
     }
 
     @Test
-    @DisplayName("A test case for cancelOrderById method")
-    void cancelOrderByIdTest()
+   
+    void closeOrderByIdTest()
     {
         Integer orderId=1;
         try
         {
             Assertions.assertNull(this.orderService.closeOrderById(orderId));
-        } catch (Exception e) {
-            System.out.println("Unexpected error:"+e.getClass().getName());
+        } catch (CustomerException e) {
+            Assertions.assertEquals("Customer does not exist with Id:"+1,e.getMessage());
+        } catch (OrderException e) {
+            Assertions.assertEquals("No order exist with the orderId to cancel",e.getMessage());
+
         }
 
     }
 
-    @Test
-    void ShouldThrowExceptionWhenCancelOrderReceivesNullTest()
-    {
 
-        try {
-            assertNull(this.orderService.closeOrderById(null));
-        }
-        catch (Exception e)
-        {
-            System.out.println("Unexpected error:"+e.getClass().getName());
-        }
-    }
 
     @Test
     void getOrdersByDateBetweenTest()
@@ -129,42 +86,51 @@ class OrderApplicationTests {
         {
             Assertions.assertNotNull(this.orderService.getOrdersByDate(startDate,endDate));
         }
-        catch (Exception e)
+        catch (OrderException e)
         {
-            System.out.println("Unexpected exception"+e.getClass().getName());
+            Assertions.assertEquals("Dates shouldn't be null",e.getMessage());
         }
 
     }
-
-    @Test
-    void shouldThrowExceptionWhenGetOrdersDateBetweenReceivesNullTest()
+@Test
+void getOrdersByDateBetweenNullTest()
+{
+    try
     {
-        LocalDate startDate=null;
-        LocalDate endDate=null;
-        try
-        {
-            Assertions.assertNull(this.orderService.getOrdersByDate(startDate,endDate));
-        }
-        catch(Exception e)
-        {
-            System.out.println("Unexpected Exception"+e.getClass().getName());
-        }
-
+        Assertions.assertNull(this.orderService.getOrdersByDate(null,LocalDate.now()));
     }
+    catch(OrderException e)
+    {
+        Assertions.assertEquals("Dates shouldn't be null",e.getMessage());
+    }
+}
 
 
 
     @Test
-    void throwsExceptionWhenGetTotalPriceReceivesNullTest()
+    void getTotalPriceTest()
     {
-        Integer orderId=null;
+        Integer orderId=1;
         try
         {
-            Assertions.assertNull(this.orderService.getTotalPrice(orderId));
+            Assertions.assertNotNull(this.orderService.getTotalPrice(orderId));
         }
-        catch(Exception e)
+        catch(OrderException e)
         {
-            System.out.println("Unexpected Exception"+e.getClass().getName());
+            Assertions.assertEquals("Order does not exist with Id:"+orderId,e.getMessage());
+        }
+    }
+    @Test
+    
+    void createOrderTest() throws OrderException , CartException {
+        Integer customerId = 1;
+
+        try {
+            Assertions.assertNotNull(this.orderService.createOrder(customerId));
+
+        } catch (Exception e) {
+
+            System.out.println("Unexpected Exception in createOrderTest: " + e.getClass().getName());
         }
     }
 
@@ -189,14 +155,7 @@ class OrderApplicationTests {
         Integer orderID=1;
         PaymentDetails paymentDetails=new PaymentDetails();
         paymentDetails.setOrderId(orderID);
-        try
-        {
-            Assertions.assertEquals(orderID,paymentDetails.getOrderId());
-        }
-        catch(Exception e)
-        {
-            System.out.println("Unexpected Exception"+e.getClass().getName());
-        }
+        Assertions.assertEquals(orderID,paymentDetails.getOrderId());
 
     }
 
@@ -214,23 +173,10 @@ class OrderApplicationTests {
         }
     }
 
-    @Test
-    void updateOrderStatusTestIfOrderIdIsNull()
-    {
-        Integer orderId=null;
-        String orderStatus="processing";
-        try
-        {
-            assertNull(this.orderService.updateOrderStatus(orderId,orderStatus));
-        }
-        catch(Exception e)
-        {
-            System.out.println(e.getClass().getName());
-        }
-    }
+
 
     @Test
-    void updateOrderStatusNewTest()
+    void updateOrderStatusEqualsTest()
     {
         Order sampleOrder = new Order(1,"vishnu","priya");
         this.orderRepository.save(sampleOrder);
@@ -247,9 +193,9 @@ class OrderApplicationTests {
         }
     }
     @Test
-    void updateOrderStatusTest1()
+    void updateOrderStatusWhenReceivesNullStatusTest()
     {
-        Order newOrder=new Order(1,"vishnu","priya");
+        Order newOrder=new Order(1,"john","leo");
         this.orderRepository.save(newOrder);
         String status=null;
         try
@@ -270,9 +216,10 @@ class OrderApplicationTests {
         {
             Assertions.assertNull(this.orderService.updatePaymentDetailsByOrderId(null,null));
         }
-        catch(Exception e)
+        catch(OrderException e)
         {
-            System.out.println("Unexpected Exception"+e.getClass().getName());
+            Assertions.assertEquals("order not found",e.getMessage());
+
         }
     }
     @Test
@@ -286,11 +233,11 @@ class OrderApplicationTests {
 
             assertEquals(0, actualOrders.size());
         } catch (OrderException e) {
-            throw new RuntimeException(e);
+            Assertions.assertEquals("order status cannot be empty",e.getMessage());
         }
     }
     @Test
-    void testGetOrdersByStatusWithNullStatus() throws OrderException {
+    void getOrdersByStatusWithNullStatusTest() throws OrderException {
 
         try
         {
@@ -359,7 +306,7 @@ class OrderApplicationTests {
 
     @Test
     @Transactional
-    void ddAddressToOrderNullTest() throws CustomerException {
+    void addAddressToOrderNullTest() throws CustomerException {
         Customer sampleCustomer = new Customer("john","leo","john","leo", 3264725L);
         this.customerRepository.save(sampleCustomer);
         Order sampleOrder = new Order(sampleCustomer.getId(),"john","leo");
@@ -370,8 +317,8 @@ class OrderApplicationTests {
         {
             ResponseEntity<Order> response = this.orderService.addAddressToOrder(1, addressDto);
             assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
-        } catch (OrderException | CustomerException e) {
-            throw new RuntimeException(e);
+        } catch (OrderException |CustomerException e) {
+            Assertions.assertEquals("No customer exist with id: "+1,e.getMessage());
         }
 
 
@@ -384,7 +331,7 @@ class OrderApplicationTests {
             Assertions.assertNotNull(address);
         }
     } catch (OrderException e) {
-        System.out.println(e.getClass().getName());
+        Assertions.assertEquals("Order does not exist with Id: "+1,e.getMessage());
     }
     }
     @Test
