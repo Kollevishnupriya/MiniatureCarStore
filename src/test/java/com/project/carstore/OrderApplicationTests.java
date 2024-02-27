@@ -56,7 +56,7 @@ class OrderApplicationTests {
        Integer customerId = 1;
 
        try {
-          Assertions.assertNull(this.orderService.createOrder(customerId));
+          Assertions.assertNotNull(this.orderService.createOrder(customerId));
 
        } catch (Exception e) {
 
