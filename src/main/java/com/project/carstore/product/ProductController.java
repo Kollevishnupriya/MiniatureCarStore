@@ -7,6 +7,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/product")
+@CrossOrigin(origins = "*")
 public class ProductController {
     private final ProductService productService;
 
@@ -26,7 +27,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/{Id}")
-    public ResponseEntity<Product> deleteProductFromDb(@PathVariable("Id") Long id) throws ProductException {
+    public ResponseEntity<Product> deleteProductFromDb(@PathVariable("Id") String id) throws ProductException {
         Product deletedProduct;
         try {
             deletedProduct=this.productService.deleteProductFromDb(id);
@@ -109,5 +110,13 @@ public class ProductController {
         productsList=this.productService.getAllProductsByPrice(price);
         return new ResponseEntity<>(productsList,HttpStatus.OK);
     }
+
+    @GetMapping("/category")
+    public ResponseEntity<List<Product>> getAllProductsByCategory(@RequestParam("category") String category) {
+        return new ResponseEntity<>(this.productService.getAllProductsByCategory(category), HttpStatus.OK);
+    }
+
+//    @GetMapping("/search")
+//    public ResponseEntity<List<Product>> searchProducts(@RequestParam(""))
 
 }

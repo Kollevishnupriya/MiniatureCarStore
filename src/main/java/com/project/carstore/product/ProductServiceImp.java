@@ -16,7 +16,7 @@ public class ProductServiceImp implements ProductService {
     @Override
     public Product addProductToDb(ProductDTO product) throws ProductException {
         //handle exception here
-        if(product==null || product.getName()==null || product.getPrice()==null || product.getColour()==null || product.getQuantity()==null)
+        if(product==null || product.getName().isEmpty()|| product.getPrice()==null || product.getColour()==null || product.getQuantity()==null)
         {
             throw new ProductException("Insufficient Product Details");
         }
@@ -24,19 +24,24 @@ public class ProductServiceImp implements ProductService {
         {
             throw new ProductException("Product already exists with name:"+product.getName());
         }
-        Product productToBeAdded =new Product( product.getName(), product.getPrice(), product.getDescription(), product.getImageUrl(), product.getColour(), product.getQuantity());
+        Product productToBeAdded =new Product(product.getName(), product.getPrice(), product.getDescription(), product.getImageUrl(), product.getColour(), product.getQuantity(), product.getCategory());
         return this.productRepository.save(productToBeAdded);
     }
 
     @Override
-    public Product deleteProductFromDb(Long id) throws ProductException {
+    public List<Product> getAllProductsByCategory(String category)  {
+        return this.productRepository.findAllByCategory(category);
+    }
+
+    @Override
+    public Product deleteProductFromDb(String id) throws ProductException {
         //handle exception
         if(id==null)
         {
             throw new ProductException("Invalid product id");
         }
         // get product from db, if available delete it
-        Optional<Product> foundProduct=productRepository.findById(id);
+        Optional<Product> foundProduct=productRepository.findById(Long.valueOf(id));
         if(foundProduct.isEmpty())
         {
             throw new ProductException("No such product exist with Id:"+ id);
